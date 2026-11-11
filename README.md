@@ -88,6 +88,7 @@ Ejecutamos siempre **desde esta carpeta** (donde está `app.py`).
 ```bash
 cp .env.example .env
 # Completad: GEMINI_API_KEY, API_KEY
+# GEMINI_MODEL ya viene como gemini-3.5-flash-lite (el defecto de config.py)
 # Con uvicorn en el PC: usad 127.0.0.1 en DATABASE_URL (descomentad esa línea
 # y comentad la de host.docker.internal)
 
@@ -159,6 +160,7 @@ La terminal se queda mostrando los logs: la API está en marcha. `Ctrl+C` la par
 docker run --rm --name agente-api -p 8000:8000 \
   -e API_KEY=cambia-esta-clave \
   -e GEMINI_API_KEY=tu-clave-gemini \
+  -e GEMINI_MODEL=gemini-3.5-flash-lite \
   -e DATABASE_URL=postgresql://postgres:123456@host.docker.internal:5432/postgres \
   -e ASK_TIMEOUT_SECONDS=300 \
   -e CORS_ORIGINS=http://127.0.0.1:8501,http://localhost:8501 \
@@ -330,7 +332,7 @@ Para la API **dentro de Render** usad la **Internal Database URL** (el host cort
 ### 3) Desplegar la API
 
 1. **New** → **Web Service** → el repo, con **esta carpeta** como raíz (donde está el `Dockerfile`). Entorno **Docker**.
-2. Environment: `API_KEY`, `GEMINI_API_KEY`, `GEMINI_MODEL` (opcional; por defecto `gemini-2.5-flash`), `ASK_TIMEOUT_SECONDS`, `CORS_ORIGINS`, `DATABASE_URL` (el ejemplo de arriba, o la Internal Database URL).
+2. Environment: `API_KEY`, `GEMINI_API_KEY`, `GEMINI_MODEL` (opcional; por defecto `gemini-3.5-flash-lite`), `ASK_TIMEOUT_SECONDS`, `CORS_ORIGINS`, `DATABASE_URL` (el ejemplo de arriba, o la Internal Database URL).
 3. El hosting inyecta `PORT`; el Dockerfile ya lo usa.
 
 Nunca subáis `.env` con secretos reales. Las variables van en el panel de Render.
