@@ -272,7 +272,7 @@ GET `http://127.0.0.1:8000/threads/demo-1/messages?api_key=<CLAVE>`
 2. Tras el `/ask` del paso 3 deberían existir tablas del historial (p. ej. `conversation`, `message`) con filas nuevas.
 3. Refrescad el árbol (F5) si no las veis aún.
 
-### 6) (Opcional) Tras empaquetar en Docker
+### 6) Tras empaquetar en Docker
 
 1. Parad uvicorn (Ctrl+C) para liberar el puerto `8000`.
 2. En `.env`, `DATABASE_URL` con `host.docker.internal` (como en `.env.example`).
@@ -292,40 +292,45 @@ Primero la base de datos. Después el servicio web, en la **misma región** que 
 3. Poned un nombre (p. ej. `agente-pg`), la región y el plan. El resto puede quedarse por defecto (usuario, nombre de la BD y versión).
 4. **Create Database**. Esperad a que el estado pase a **Available**.
 
-En la ficha de la base, pestaña **Connections**, Render muestra host, puerto, usuario, contraseña, nombre de la BD y dos URLs:
+En la ficha de la base, pestaña **Connections**, Render muestra los datos reales. Los de abajo son un **ejemplo** (sustituidlos por los vuestros):
 
-| URL | Para qué |
-|-----|----------|
-| **Internal Database URL** | La API desplegada en Render. Pegadla en `DATABASE_URL` del Web Service. |
-| **External Database URL** | pgAdmin en vuestro PC. Desde fuera, el host interno no resuelve. |
+- **Host**: `dpg-abc123xyz.render.com`
+- **Puerto**: `5432`
+- **Usuario**: `render_user`
+- **Contraseña**: `render_password`
+- **Base de datos**: `render_db`
 
-`127.0.0.1` y `host.docker.internal` aquí no valen: Postgres ya no está en el portátil. Si la URL empieza por `postgres://`, `config.py` la pasa a `postgresql://`.
+Con esos mismos datos, la variable de la API queda así. Pegadla en el Web Service como `DATABASE_URL` (o copiad la **Internal Database URL** del panel, que ya viene montada):
 
-Las tablas (`conversation`, `message`) no hace falta crearlas a mano: la API las crea al arrancar.
+```text
+DATABASE_URL=postgresql://render_user:render_password@dpg-abc123xyz.render.com:5432/render_db
+```
+
+`127.0.0.1` y `host.docker.internal` aquí no valen: Postgres ya no está en el portátil. Si la URL de Render empieza por `postgres://`, `config.py` la pasa a `postgresql://`.
+
+Para la API **dentro de Render** usad la **Internal Database URL** (el host corto, solo resoluble desde Render). Para pgAdmin en el PC, el host externo del ejemplo. Las tablas (`conversation`, `message`) no hace falta crearlas a mano: la API las crea al arrancar.
 
 ### 2) Verla en pgAdmin
 
-Mismos pasos que en local, con los datos de **Connections** (los de la URL externa):
-
-1. Clic derecho en **Servers** → **Register** → **Server** (o **Create** → **Server**).
-2. Pestaña **General**: un nombre, p. ej. `RenderDB`.
-3. Pestaña **Connection**:
+1. En el panel izquierdo, clic derecho en **Servers** → **Create** → **Server**.
+2. Pestaña **General**: un nombre, por ejemplo `RenderDB`.
+3. Pestaña **Connection**, con los datos del ejemplo:
 
 | Campo | Valor |
 |-------|--------|
-| Host name/address | el host externo, p. ej. `dpg-abc123xyz.render.com` |
+| Host name/address | `dpg-abc123xyz.render.com` |
 | Port | `5432` |
-| Maintenance database | el nombre de la BD que muestra Render |
-| Username | el usuario que muestra Render |
-| Password | la contraseña que muestra Render |
+| Maintenance database | `render_db` |
+| Username | `render_user` |
+| Password | `render_password` |
 
 4. Pestaña **SSL**: **SSL mode** = `Require`. Sin esto pgAdmin no entra.
-5. Save. Tras un `/ask` contra la API en Render, en esa BD aparecen `conversation` y `message`.
+5. **Save**. Tras un `/ask` contra la API en Render, en esa BD aparecen `conversation` y `message`.
 
 ### 3) Desplegar la API
 
 1. **New** → **Web Service** → el repo, con **esta carpeta** como raíz (donde está el `Dockerfile`). Entorno **Docker**.
-2. Environment: `API_KEY`, `GEMINI_API_KEY`, `GEMINI_MODEL` (opcional; por defecto `gemini-2.5-flash`), `ASK_TIMEOUT_SECONDS`, `CORS_ORIGINS`, `DATABASE_URL` (la **Internal Database URL**).
+2. Environment: `API_KEY`, `GEMINI_API_KEY`, `GEMINI_MODEL` (opcional; por defecto `gemini-2.5-flash`), `ASK_TIMEOUT_SECONDS`, `CORS_ORIGINS`, `DATABASE_URL` (el ejemplo de arriba, o la Internal Database URL).
 3. El hosting inyecta `PORT`; el Dockerfile ya lo usa.
 
 Nunca subáis `.env` con secretos reales. Las variables van en el panel de Render.
@@ -340,5 +345,5 @@ Nunca subáis `.env` con secretos reales. Las variables van en el panel de Rende
 - [ ] `/ask` sin `api_key` → 401; con `?api_key=` → 200
 - [ ] GET `/threads/demo-1/messages` con clave → mensajes
 - [ ] Historial visible en pgAdmin
-- [ ] (Opcional) Imagen Docker de la API (mismos checks)
-- [ ] (Opcional) Deploy en Render con las mismas variables
+- [ ] Imagen Docker de la API
+- [ ] Deploy en Render con las mismas variables
